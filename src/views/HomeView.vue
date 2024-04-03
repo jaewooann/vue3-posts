@@ -8,12 +8,12 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 
-const router = useRouter()
+const router = useRouter();
 const goAboutPage = () => {
-  router.push('/about')
-}
+  router.push('/about');
+};
 </script>
 
 <style lang="scss" scoped></style>

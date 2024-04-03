@@ -12,6 +12,9 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
+  env: {
+    'vue/setup-compiler-macros': true,
+  },
   rules: {
     'prettier/prettier': [
       'error',
