@@ -77,13 +77,13 @@ const fetchPosts = async () => {
 watchEffect(fetchPosts);
 // fetchPosts();
 
-const goPage = (id) => {
+const goPage = id => {
   // router.push(`/posts/${id}`);
   router.push({
     name: 'PostDetail',
     params: {
-      id
-    }
+      id,
+    },
   });
 };
 // modal

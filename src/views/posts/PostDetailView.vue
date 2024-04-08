@@ -16,7 +16,9 @@
         <button class="btn btn-outline-dark" @click="goListPage">목록</button>
       </div>
       <div class="col-auto">
-        <button class="btn btn-outline-primary" @click="goEditPage">수정</button>
+        <button class="btn btn-outline-primary" @click="goEditPage">
+          수정
+        </button>
       </div>
       <div class="col-auto">
         <button class="btn btn-outline-danger" @click="remove">삭제</button>
@@ -31,7 +33,7 @@ import { getPostById, deletePost } from '@/api/posts';
 import { ref } from 'vue';
 
 const props = defineProps({
-  id: [String, Number]
+  id: [String, Number],
 });
 
 const router = useRouter();
@@ -66,7 +68,7 @@ const remove = async () => {
     if (confirm('삭제 하시겠습니까?') === false) return;
     await deletePost(props.id);
     router.push({
-      name: 'PostList'
+      name: 'PostList',
     });
   } catch (error) {
     console.error(error);
@@ -75,7 +77,7 @@ const remove = async () => {
 
 const goListPage = () => {
   router.push({
-    name: 'PostList'
+    name: 'PostList',
   });
 };
 
@@ -83,8 +85,8 @@ const goEditPage = () => {
   router.push({
     name: 'PostEdit',
     params: {
-      id: props.id
-    }
+      id: props.id,
+    },
   });
 };
 </script>

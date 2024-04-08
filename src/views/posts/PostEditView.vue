@@ -2,9 +2,19 @@
   <div>
     <h2>게시글 수정</h2>
     <hr class="my-4" />
-    <PostForm v-model:title="form.title" v-model:content="form.content" @submit.prevent="edit">
+    <PostForm
+      v-model:title="form.title"
+      v-model:content="form.content"
+      @submit.prevent="edit"
+    >
       <template #actions>
-        <button type="button" class="btn btn-outline-danger" @click="goDetailPage">취소</button>
+        <button
+          type="button"
+          class="btn btn-outline-danger"
+          @click="goDetailPage"
+        >
+          취소
+        </button>
         <button class="btn btn-primary">수정</button>
       </template>
     </PostForm>
@@ -25,7 +35,7 @@ const id = route.params.id;
 
 const form = ref({
   title: null,
-  content: null
+  content: null,
 });
 
 const fetchPost = async () => {
@@ -49,8 +59,8 @@ const edit = async () => {
     router.push({
       name: 'PostDetail',
       params: {
-        id
-      }
+        id,
+      },
     });
     vAlert('수정이 완료되었습니다.', 'success');
   } catch (error) {
@@ -63,8 +73,8 @@ const goDetailPage = () => {
   router.push({
     name: 'PostDetail',
     params: {
-      id
-    }
+      id,
+    },
   });
 };
 
