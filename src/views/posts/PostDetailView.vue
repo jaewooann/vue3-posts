@@ -1,8 +1,12 @@
 <template>
-  <div>
+  <AppLoading v-if="loading" />
+
+  <AppError v-else-if="error" :message="error.message" />
+
+  <div v-else>
     <h2>{{ post.title }}</h2>
     <p>{{ post.content }}</p>
-    <p class="text-muted">{{ post.createdAt }}</p>
+    <p class="text-muted">{{ $dayjs(post.createdAt).format('YYYY. MM. DD HH:mm:ss') }}</p>
     <hr class="my-4" />
     <div class="row g-2">
       <div class="col-auto">
@@ -16,9 +20,7 @@
         <button class="btn btn-outline-dark" @click="goListPage">목록</button>
       </div>
       <div class="col-auto">
-        <button class="btn btn-outline-primary" @click="goEditPage">
-          수정
-        </button>
+        <button class="btn btn-outline-primary" @click="goEditPage">수정</button>
       </div>
       <div class="col-auto">
         <button class="btn btn-outline-danger" @click="remove">삭제</button>
@@ -33,7 +35,7 @@ import { getPostById, deletePost } from '@/api/posts';
 import { ref } from 'vue';
 
 const props = defineProps({
-  id: [String, Number],
+  id: [String, Number]
 });
 
 const router = useRouter();
@@ -47,13 +49,18 @@ const router = useRouter();
 // reactive의 단점)
 // 객체 할당 불가능
 const post = ref({});
+const error = ref(null);
+const loading = ref(false);
 
 const fetchPost = async () => {
   try {
+    loading.value = true;
     const { data } = await getPostById(props.id);
     setPost(data);
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    error.value = err;
+  } finally {
+    loading.value = false;
   }
 };
 const setPost = ({ title, content, createdAt }) => {
@@ -68,7 +75,7 @@ const remove = async () => {
     if (confirm('삭제 하시겠습니까?') === false) return;
     await deletePost(props.id);
     router.push({
-      name: 'PostList',
+      name: 'PostList'
     });
   } catch (error) {
     console.error(error);
@@ -77,7 +84,7 @@ const remove = async () => {
 
 const goListPage = () => {
   router.push({
-    name: 'PostList',
+    name: 'PostList'
   });
 };
 
@@ -85,8 +92,8 @@ const goEditPage = () => {
   router.push({
     name: 'PostEdit',
     params: {
-      id: props.id,
-    },
+      id: props.id
+    }
   });
 };
 </script>
