@@ -2,7 +2,11 @@
   <div>
     <h2>게시글 목록</h2>
     <hr class="my-4" />
-    <PostFilter v-model:title="params.title_like" v-model:limit="params._limit"></PostFilter>
+    <PostFilter
+      v-model:title="params.title_like"
+      :limit="params._limit"
+      @update:limit="changeLimit"
+    ></PostFilter>
 
     <hr class="my-4" />
 
@@ -10,8 +14,12 @@
 
     <AppError v-else-if="error" :message="error.message" />
 
+    <template v-else-if="!isExist">
+      <p class="text-center py-5 text-muted">No Results</p>
+    </template>
+
     <template v-else>
-      <AppGrid :items="posts">
+      <AppGrid :items="posts" col-class="col-12 col-md-6 col-lg-4">
         <template v-slot="{ item }">
           <PostItem
             :title="item.title"
@@ -19,6 +27,7 @@
             :created-at="item.createdAt"
             @click="goPage(item.id)"
             @modal="openModal(item)"
+            @preview="selectPreview(item.id)"
           ></PostItem>
         </template>
       </AppGrid>
@@ -39,10 +48,10 @@
       />
     </teleport>
 
-    <template v-if="posts && posts.length > 0">
+    <template v-if="previewId">
       <hr class="my-5" />
       <AppCard>
-        <PostDetailView :id="posts[0].id"></PostDetailView>
+        <PostDetailView :id="previewId"></PostDetailView>
       </AppCard>
     </template>
   </div>
@@ -54,41 +63,36 @@ import PostDetailView from '@/views/posts/PostDetailView.vue';
 import PostModal from '@/components/posts/PostModal.vue';
 import PostFilter from '@/components/posts/PostFilter.vue';
 
-import { getPosts } from '@/api/posts';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { computed } from 'vue';
-import { watchEffect } from 'vue';
+import { useAxios } from '@/hooks/useAxios';
 
 const router = useRouter();
-const posts = ref([]);
-const error = ref(null);
-const loading = ref(false);
+
+const previewId = ref(null);
+const selectPreview = (id) => (previewId.value = id);
+
 const params = ref({
   _sort: 'createdAt',
   _order: 'desc',
   _page: 1,
-  _limit: 3,
+  _limit: 6,
   title_like: ''
 });
-// Pagination
-const totalCount = ref(0);
-const pageCount = computed(() => Math.ceil(totalCount.value / params.value._limit));
 
-const fetchPosts = async () => {
-  try {
-    loading.value = true;
-    const { data, headers } = await getPosts(params.value);
-    posts.value = data;
-    totalCount.value = headers['x-total-count'];
-  } catch (err) {
-    error.value = err;
-  } finally {
-    loading.value = false;
-  }
+const changeLimit = (value) => {
+  params.value._limit = value;
+  params.value._page = 1;
 };
-watchEffect(fetchPosts);
-// fetchPosts();
+
+const { response, data: posts, error, loading } = useAxios('/posts', { method: 'get', params });
+
+const isExist = computed(() => posts.value && posts.value.length > 0);
+
+// Pagination
+const totalCount = computed(() => response.value.headers['x-total-count']);
+const pageCount = computed(() => Math.ceil(totalCount.value / params.value._limit));
 
 const goPage = (id) => {
   // router.push(`/posts/${id}`);

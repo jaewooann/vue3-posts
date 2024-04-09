@@ -1,7 +1,7 @@
 import {
   createRouter,
   // createWebHashHistory,
-  createWebHistory,
+  createWebHistory
 } from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
 import AboutView from '@/views/AboutView.vue';
@@ -14,33 +14,34 @@ import NestedView from '@/views/nested/NestedView.vue';
 import NestedOneView from '@/views/nested/NestedOneView.vue';
 import NestedTwoView from '@/views/nested/NestedTwoView.vue';
 import NestedHomeView from '@/views/nested/NestedHomeView.vue';
+import MyPage from '@/views/MyPage.vue';
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: HomeView,
+    component: HomeView
   },
   {
     path: '/about',
     name: 'About',
-    component: AboutView,
+    component: AboutView
   },
   {
     path: '/posts',
     name: 'PostList',
-    component: PostListView,
+    component: PostListView
   },
   {
     path: '/posts/create',
     name: 'PostCreate',
-    component: PostCreateView,
+    component: PostCreateView
   },
   {
     path: '/posts/:id',
     name: 'PostDetail',
     component: PostDetailView,
-    props: true,
+    props: true
     // props: (route) => ({
     //   id: parseInt(route.params.id)
     // })
@@ -48,12 +49,12 @@ const routes = [
   {
     path: '/posts/:id/edit',
     name: 'PostEdit',
-    component: PostEditView,
+    component: PostEditView
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: NotFoundView,
+    component: NotFoundView
   },
   {
     path: '/nested',
@@ -63,26 +64,48 @@ const routes = [
       {
         path: '',
         name: 'NestedHome',
-        component: NestedHomeView,
+        component: NestedHomeView
       },
       {
         path: 'one',
         name: 'NestedOne',
-        component: NestedOneView,
+        component: NestedOneView
       },
       {
         path: 'two',
         name: 'NestedTwo',
-        component: NestedTwoView,
-      },
-    ],
+        component: NestedTwoView
+      }
+    ]
   },
+  {
+    path: '/my',
+    name: 'MyPage',
+    component: MyPage,
+    beforeEnter: [removeQueryString]
+  }
 ];
+
+function removeQueryString(to) {
+  if (Object.keys(to.query).length > 0) {
+    return { path: to.path, query: {} };
+  }
+}
 
 const router = createRouter({
   history: createWebHistory(),
   // history: createWebHashHistory(),
-  routes,
+  routes
 });
+
+// router.beforeEach((to, from) => {
+//   console.log('to: ', to);
+//   console.log('from: ', from);
+//   if (to.name === 'MyPage') {
+//     // return false;
+//     // return { name: 'Home' };
+//     return '/posts';
+//   }
+// });
 
 export default router;

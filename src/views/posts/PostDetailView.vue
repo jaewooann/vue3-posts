@@ -5,15 +5,17 @@
 
   <div v-else>
     <h2>{{ post.title }}</h2>
+    <p>id: {{ props.id }}, isOdd: {{ isOdd }}</p>
     <p>{{ post.content }}</p>
     <p class="text-muted">{{ $dayjs(post.createdAt).format('YYYY. MM. DD HH:mm:ss') }}</p>
     <hr class="my-4" />
+    <AppError v-if="removeError" :message="removeError.message" />
     <div class="row g-2">
       <div class="col-auto">
-        <button class="btn btn-outline-dark">이전글</button>
+        <button class="btn btn-outline-dark" @click="$router.push('/posts/10')">이전글</button>
       </div>
       <div class="col-auto">
-        <button class="btn btn-outline-dark">다음글</button>
+        <button class="btn btn-outline-dark" @click="$router.push('/posts/11')">다음글</button>
       </div>
       <div class="col-auto me-auto"></div>
       <div class="col-auto">
@@ -23,63 +25,63 @@
         <button class="btn btn-outline-primary" @click="goEditPage">수정</button>
       </div>
       <div class="col-auto">
-        <button class="btn btn-outline-danger" @click="remove">삭제</button>
+        <button class="btn btn-outline-danger" @click="remove" :disabled="removeLoading">
+          <template v-if="removeLoading">
+            <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+            <span class="visually-hidden" role="status">Loading...</span>
+          </template>
+          <template v-else>삭제</template>
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
-import { getPostById, deletePost } from '@/api/posts';
-import { ref } from 'vue';
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router';
+import { useAxios } from '@/hooks/useAxios';
+import { useAlert } from '@/composables/alert';
+import { computed } from 'vue';
+import { useNumber } from '@/composables/number';
+import { toRefs } from 'vue';
+
+const { vAlert, vSuccess } = useAlert();
 
 const props = defineProps({
   id: [String, Number]
 });
 
 const router = useRouter();
-// const id = route.params.id;
-// ref의 장점)
-// 객체 할당 가능, 일관성 유지
-// ref의 단점)
-// form.value.title.. 붙일게 많다.
-// reactive의 장점)
-// form.title.. 붙일게 적다.
-// reactive의 단점)
-// 객체 할당 불가능
-const post = ref({});
-const error = ref(null);
-const loading = ref(false);
+// const idRef = toRef(props, 'id');
+const { id: idRef } = toRefs(props);
+const { isOdd } = useNumber(idRef);
+const url = computed(() => `/posts/${props.id}`);
+const { data: post, error, loading } = useAxios(url);
 
-const fetchPost = async () => {
-  try {
-    loading.value = true;
-    const { data } = await getPostById(props.id);
-    setPost(data);
-  } catch (err) {
-    error.value = err;
-  } finally {
-    loading.value = false;
+const {
+  error: removeError,
+  loading: removeLoading,
+  execute
+} = useAxios(
+  `/posts/${props.id}`,
+  { method: 'delete' },
+  {
+    immediate: false,
+    onSuccess: () => {
+      router.push({
+        name: 'PostList'
+      });
+      vSuccess('삭제가 완료되었습니다.');
+    },
+    onError: (err) => {
+      vAlert(err.message);
+    }
   }
-};
-const setPost = ({ title, content, createdAt }) => {
-  post.value.title = title;
-  post.value.content = content;
-  post.value.createdAt = createdAt;
-};
-fetchPost();
+);
 
 const remove = async () => {
-  try {
-    if (confirm('삭제 하시겠습니까?') === false) return;
-    await deletePost(props.id);
-    router.push({
-      name: 'PostList'
-    });
-  } catch (error) {
-    console.error(error);
-  }
+  if (confirm('삭제 하시겠습니까?') === false) return;
+  execute();
 };
 
 const goListPage = () => {
@@ -95,6 +97,19 @@ const goEditPage = () => {
       id: props.id
     }
   });
+};
+onBeforeRouteUpdate(() => {
+  console.log('onBeforeRouteUpdate');
+});
+onBeforeRouteLeave(() => {
+  console.log('onBeforeRouteLeave');
+});
+</script>
+<script>
+export default {
+  beforeRouteEnter() {
+    console.log('beforeRouteEnter');
+  }
 };
 </script>
 
